@@ -37,9 +37,15 @@ public class CompraController {
         return compraService.clientesFieis();
     }
 
+//    @GetMapping("/recomendacao/cliente/tipo")
+//    public ResponseEntity<ProdutoDTO> recomendarVinho(@RequestParam String cpfCliente) {
+//        ProdutoDTO recomendacao = compraService.recomendarVinho(cpfCliente);
+//        return ResponseEntity.ok(recomendacao);
+//    }
+
     @GetMapping("/recomendacao/cliente/tipo")
-    public ResponseEntity<ProdutoDTO> recomendarVinho(@RequestParam String cpfCliente) {
-        ProdutoDTO recomendacao = compraService.recomendarVinho(cpfCliente);
+    public ResponseEntity<ProdutoDTO> recomendarVinho(@RequestParam String cpfCliente, @RequestParam String tipoVinho) {
+        ProdutoDTO recomendacao = compraService.recomendarVinho(cpfCliente, tipoVinho);
         return ResponseEntity.ok(recomendacao);
     }
 }

@@ -152,30 +152,71 @@ public class CompraService {
                 .collect(Collectors.toList());
     }
 
-    public ProdutoDTO recomendarVinho(String cpfCliente) {
+//    public ProdutoDTO recomendarVinho(String cpfCliente) {
+//        List<ClienteDTO> clientes = obterClientes();
+//        List<ProdutoDTO> produtos = obterProdutos();
+//
+//        ClienteDTO cliente = clientes.stream()
+//                .filter(c -> c.getCpf().equals(cpfCliente))
+//                .findFirst()
+//                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+//
+//        Map<String, Long> tipoVinhoCount = cliente.getCompras().stream()
+//                .map(compra -> produtos.stream()
+//                        .filter(p -> p.getCodigo() == Integer.parseInt(compra.getCodigo()))
+//                        .findFirst()
+//                        .orElse(null))
+//                .filter(produto -> produto != null)
+//                .collect(Collectors.groupingBy(ProdutoDTO::getTipoVinho, Collectors.counting()));
+//
+//        String tipoVinhoMaisComprado = tipoVinhoCount.entrySet().stream()
+//                .max(Map.Entry.comparingByValue())
+//                .map(Map.Entry::getKey)
+//                .orElseThrow(() -> new ResourceNotFoundException("Nenhuma compra encontrada para recomendar vinho"));
+//
+//        return produtos.stream()
+//                .filter(p -> p.getTipoVinho().equals(tipoVinhoMaisComprado))
+//                .findFirst()
+//                .orElseThrow(() -> new ResourceNotFoundException("Nenhum vinho encontrado para recomendação"));
+//    }
+
+    public ProdutoDTO recomendarVinho(String cpfCliente, String tipoVinho) {
         List<ClienteDTO> clientes = obterClientes();
         List<ProdutoDTO> produtos = obterProdutos();
 
+        // Verifica se o cliente existe
         ClienteDTO cliente = clientes.stream()
                 .filter(c -> c.getCpf().equals(cpfCliente))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
 
-        Map<String, Long> tipoVinhoCount = cliente.getCompras().stream()
-                .map(compra -> produtos.stream()
+        // Filtra os produtos pelo tipo de vinho especificado
+        List<ProdutoDTO> produtosDoTipo = produtos.stream()
+                .filter(p -> p.getTipoVinho().equalsIgnoreCase(tipoVinho))
+                .collect(Collectors.toList());
+
+        if (produtosDoTipo.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum vinho encontrado para o tipo especificado");
+        }
+
+        // Conta a quantidade de compras de cada produto do tipo especificado
+        Map<Integer, Long> produtoCount = clientes.stream()
+                .flatMap(c -> c.getCompras().stream())
+                .map(compra -> produtosDoTipo.stream()
                         .filter(p -> p.getCodigo() == Integer.parseInt(compra.getCodigo()))
                         .findFirst()
                         .orElse(null))
-                .filter(produto -> produto != null)
-                .collect(Collectors.groupingBy(ProdutoDTO::getTipoVinho, Collectors.counting()));
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(ProdutoDTO::getCodigo, Collectors.counting()));
 
-        String tipoVinhoMaisComprado = tipoVinhoCount.entrySet().stream()
+        // Encontra o produto mais comprado do tipo especificado
+        Integer codigoProdutoMaisComprado = produtoCount.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElseThrow(() -> new ResourceNotFoundException("Nenhuma compra encontrada para recomendar vinho"));
 
-        return produtos.stream()
-                .filter(p -> p.getTipoVinho().equals(tipoVinhoMaisComprado))
+        return produtosDoTipo.stream()
+                .filter(p -> p.getCodigo() == codigoProdutoMaisComprado)
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Nenhum vinho encontrado para recomendação"));
     }
