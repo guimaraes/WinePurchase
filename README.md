@@ -252,7 +252,7 @@ Para parar e remover os contêineres e a rede definida pelo Compose:
 docker-compose down
 ```
 
-### Diagrama de Entidade-Relacionamento (ERD)
+### Diagrama de Entidade-Relacionamento (DER)
 
 Aqui está o Diagrama de Entidade-Relacionamento para o projeto:
 
