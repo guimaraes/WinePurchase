@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CompraService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Value("${app.urls.clientes}")
     private String urlClientes;
