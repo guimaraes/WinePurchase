@@ -1,6 +1,5 @@
-package src.test.br.com.winepurchase.api.service;
+package br.com.winepurchase.api.controller;
 
-import br.com.winepurchase.api.controller.CompraController;
 import br.com.winepurchase.api.model.dto.ClienteComprasDTO;
 import br.com.winepurchase.api.model.dto.MaiorCompraDTO;
 import br.com.winepurchase.api.model.dto.ProdutoDTO;
@@ -67,7 +66,8 @@ public class CompraControllerTest {
 
     @Test
     public void testMaiorCompraDoAno() {
-        MaiorCompraDTO maiorCompra = new MaiorCompraDTO("Cliente 2", "12345678902", new ProdutoDTO(1, "Tinto", 100.0, "2018", 2019), 3, 300.0);
+        MaiorCompraDTO maiorCompra = new MaiorCompraDTO("Cliente 2", "12345678902",
+                new ProdutoDTO(1, "Tinto", 100.0, "2018", 2019), 3, 300.0);
 
         when(compraService.maiorCompraDoAno(2020)).thenReturn(maiorCompra);
 
