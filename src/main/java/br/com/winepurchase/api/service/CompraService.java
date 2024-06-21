@@ -40,63 +40,6 @@ public class CompraService {
         return Arrays.asList(produtos);
     }
 
-//    public List<ClienteComprasDTO> listarComprasAgrupadas() {
-//        List<ClienteDTO> clientes = obterClientes();
-//        List<ProdutoDTO> produtos = obterProdutos();
-//
-//        if (clientes.isEmpty() || produtos.isEmpty()) {
-//            throw new ResourceNotFoundException("Nenhuma compra encontrada.");
-//        }
-//
-//        List<ClienteComprasDTO> clientesCompras = new ArrayList<>();
-//
-//        for (ClienteDTO cliente : clientes) {
-//            log.info("Cliente: {}", cliente.getNome());
-//            List<CompraDetalhadaDTO> comprasDetalhadas = cliente.getCompras().stream()
-//                    .map(compra -> {
-//                        ProdutoDTO produto = produtos.stream()
-//                                .filter(p -> p.getCodigo() == Integer.parseInt(compra.getCodigo()))
-//                                .findFirst()
-//                                .orElse(null);
-//
-//                        if (produto != null) {
-//                            log.info("Produto encontrado: {} com anoCompra: {}", produto.getCodigo(), produto.getAnoCompra());
-//                            BigDecimal valorTotal = BigDecimal.valueOf(produto.getPreco())
-//                                    .multiply(BigDecimal.valueOf(compra.getQuantidade()))
-//                                    .setScale(2, RoundingMode.HALF_UP);
-//                            return new CompraDetalhadaDTO(produto, compra.getQuantidade(), valorTotal.doubleValue());
-//                        } else {
-//                            log.warn("Produto não encontrado para o código: {}", compra.getCodigo());
-//                        }
-//                        return null;
-//                    })
-//                    .filter(compra -> compra != null)
-//                    .collect(Collectors.toList());
-//
-//            BigDecimal totalCompras = comprasDetalhadas.stream()
-//                    .map(compra -> BigDecimal.valueOf(compra.getValorTotal()))
-//                    .reduce(BigDecimal.ZERO, BigDecimal::add)
-//                    .setScale(2, RoundingMode.HALF_UP);
-//
-//            ClienteComprasDTO clienteComprasDTO = new ClienteComprasDTO(
-//                    cliente.getNome(),
-//                    cliente.getCpf(),
-//                    comprasDetalhadas,
-//                    totalCompras.doubleValue()
-//            );
-//
-//            clientesCompras.add(clienteComprasDTO);
-//        }
-//
-//        if (clientesCompras.isEmpty()) {
-//            throw new ResourceNotFoundException("Nenhuma compra encontrada.");
-//        }
-//
-//        return clientesCompras.stream()
-//                .sorted((c1, c2) -> Double.compare(c1.getTotalCompras(), c2.getTotalCompras()))
-//                .collect(Collectors.toList());
-//    }
-
     public List<ClienteComprasDTO> listarComprasAgrupadas() {
         List<ClienteDTO> clientes = obterClientes();
         List<ProdutoDTO> produtos = obterProdutos();
