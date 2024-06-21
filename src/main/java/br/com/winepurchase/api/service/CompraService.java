@@ -26,6 +26,10 @@ public class CompraService {
     @Value("${app.urls.produtos}")
     private String urlProdutos;
 
+    public CompraService() {
+        this.restTemplate = null;
+    }
+
     public CompraService(RestTemplate restTemplate, String urlClientes, String urlProdutos) {
         this.restTemplate = restTemplate;
         this.urlClientes = urlClientes;

@@ -122,7 +122,7 @@ public class CompraServiceTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("[{\"codigo\": 1, \"tipo_vinho\": \"Tinto\", \"preco\": 100.0, \"safra\": \"2015\", \"ano_compra\": 2022}]")));
 
-        ProdutoDTO resultado = compraService.recomendarVinho("12345678901");
+        ProdutoDTO resultado = compraService    .recomendarVinho("12345678901");
 
         assertEquals("Tinto", resultado.getTipoVinho());
     }
