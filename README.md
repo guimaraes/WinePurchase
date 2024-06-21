@@ -2,7 +2,12 @@
 
 #### Visão Geral
 
-Este projeto é um microserviço Java baseado no Spring Boot que fornece APIs para gerenciar compras de vinhos. Ele consome dados mockados de clientes e produtos, fornecendo endpoints para listar compras, obter a maior compra do ano, identificar clientes fiéis e recomendar vinhos.
+Este é um projeto de avaliação Java com Spring Boot, onde o teste possui quatro desafios:
+- listar compras; 
+- obter a maior compra do ano; 
+- identificar clientes fiéis
+- recomendar vinhos;
+Ele consome dados mockados de clientes e produtos.
 
 #### Estrutura do Projeto
 
@@ -46,6 +51,8 @@ src/
 #### Dependências
 
 As principais dependências do projeto incluem Spring Boot, Lombok, MapStruct, Jackson, Swagger, e bibliotecas para testes como JUnit e Mockito. Abaixo estão algumas das principais dependências do `pom.xml`:
+
+Por não ter tido muito tempo para implementar os testes eu acabei removendo as bibliotecas.
 
 ```xml
 <dependencies>
@@ -200,8 +207,6 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 #### Docker Compose
 
-Para facilitar a orquestração do contêiner, você pode criar um arquivo `docker-compose.yml`:
-
 **`docker-compose.yml`**
 
 ```yaml
@@ -297,11 +302,3 @@ o repositório**
 ### Documentação Swagger
 
 Depois de iniciar o aplicativo, você pode acessar a documentação Swagger em `http://localhost:8080/swagger-ui.html` para explorar e testar os endpoints.
-
-### Contribuindo
-
-Se você deseja contribuir para este projeto, sinta-se à vontade para abrir uma issue ou enviar um pull request.
-
----
-
-Espero que esta documentação ajude você a entender e utilizar o projeto WinePurchase.
