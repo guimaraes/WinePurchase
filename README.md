@@ -285,7 +285,7 @@ erDiagram
 
 o repositório**
    ```bash
-   git clone <URL-DO-REPOSITORIO>
+   git clone https://github.com/guimaraes/WinePurchase.git
    cd vinho-microservice
    ```
 
