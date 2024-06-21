@@ -1,27 +1,21 @@
 package br.com.winepurchase.api.controller;
 
-import br.com.winepurchase.api.model.dto.ClienteComprasDTO;
-import br.com.winepurchase.api.model.dto.MaiorCompraDTO;
-import br.com.winepurchase.api.model.dto.ProdutoDTO;
+import br.com.winepurchase.api.model.dto.*;
 import br.com.winepurchase.api.service.CompraService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
-import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CompraController.class)
 public class CompraControllerTest {
@@ -32,52 +26,51 @@ public class CompraControllerTest {
     @MockBean
     private CompraService compraService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
     public void testListarCompras() throws Exception {
-        ClienteComprasDTO clienteComprasDTO = new ClienteComprasDTO("Cliente 1", "123", null, 100.0);
-        List<ClienteComprasDTO> clientesCompras = Arrays.asList(clienteComprasDTO);
+        ClienteComprasDTO clienteComprasDTO = new ClienteComprasDTO("John Doe", "12345678901", Arrays.asList(new CompraDetalhadaDTO(new ProdutoDTO(1, "Tinto", 100.0, "2015", 2022), 2, 200.0)), 200.0);
+        when(compraService.listarComprasAgrupadas()).thenReturn(Arrays.asList(clienteComprasDTO));
 
-        when(compraService.listarComprasAgrupadas()).thenReturn(clientesCompras);
-
-        mockMvc.perform(get("/compras"))
+        mockMvc.perform(get("/compras")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nome").value("Cliente 1"));
-    }
-
-    @Test
-    public void testClientesFieis() throws Exception {
-        ClienteComprasDTO clienteComprasDTO = new ClienteComprasDTO("Cliente 1", "123", null, 100.0);
-        List<ClienteComprasDTO> clientesCompras = Arrays.asList(clienteComprasDTO);
-
-        when(compraService.clientesFieis()).thenReturn(clientesCompras);
-
-        mockMvc.perform(get("/compras/clientes-fieis"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nome").value("Cliente 1"));
-    }
-
-    @Test
-    public void testRecomendarVinho() throws Exception {
-        ProdutoDTO produtoDTO = new ProdutoDTO(1, "Tinto", 10.0, "2018", 2019);
-
-        when(compraService.recomendarVinho(anyString())).thenReturn(produtoDTO);
-
-        mockMvc.perform(get("/compras/recomendacao/cliente/tipo").param("cpfCliente", "123"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tipoVinho").value("Tinto"));
+                .andExpect(jsonPath("$[0].nome").value("John Doe"))
+                .andExpect(jsonPath("$[0].totalCompras").value(200.0));
     }
 
     @Test
     public void testMaiorCompraDoAno() throws Exception {
-        MaiorCompraDTO maiorCompraDTO = new MaiorCompraDTO("Cliente 1", "123", null, 2, 20.0);
+        MaiorCompraDTO maiorCompraDTO = new MaiorCompraDTO("John Doe", "12345678901", new ProdutoDTO(1, "Tinto", 100.0, "2015", 2022), 2, 200.0);
+        when(compraService.maiorCompraDoAno(2022)).thenReturn(maiorCompraDTO);
 
-        when(compraService.maiorCompraDoAno(anyInt())).thenReturn(maiorCompraDTO);
-
-        mockMvc.perform(get("/compras/maior-compra/2019"))
+        mockMvc.perform(get("/compras/maior-compra/2022")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nomeCliente").value("Cliente 1"));
+                .andExpect(jsonPath("$.nomeCliente").value("John Doe"))
+                .andExpect(jsonPath("$.valorTotal").value(200.0));
+    }
+
+    @Test
+    public void testClientesFieis() throws Exception {
+        ClienteComprasDTO clienteComprasDTO = new ClienteComprasDTO("John Doe", "12345678901", Arrays.asList(new CompraDetalhadaDTO(new ProdutoDTO(1, "Tinto", 100.0, "2015", 2022), 2, 200.0)), 200.0);
+        when(compraService.clientesFieis()).thenReturn(Arrays.asList(clienteComprasDTO));
+
+        mockMvc.perform(get("/compras/clientes-fieis")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].nome").value("John Doe"))
+                .andExpect(jsonPath("$[0].totalCompras").value(200.0));
+    }
+
+    @Test
+    public void testRecomendarVinho() throws Exception {
+        ProdutoDTO produtoDTO = new ProdutoDTO(1, "Tinto", 100.0, "2015", 2022);
+        when(compraService.recomendarVinho("12345678901")).thenReturn(produtoDTO);
+
+        mockMvc.perform(get("/compras/recomendacao/cliente/tipo")
+                        .param("cpfCliente", "12345678901")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tipo_vinho").value("Tinto"));
     }
 }

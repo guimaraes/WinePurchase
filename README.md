@@ -189,19 +189,14 @@ public class GlobalExceptionHandler {
 Crie um arquivo chamado `Dockerfile` na raiz do projeto com o seguinte conteúdo:
 
 ```Dockerfile
-# Utiliza uma imagem base do OpenJDK 11
 FROM openjdk:11-jre-slim
 
-# Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Copia o arquivo JAR gerado pelo Maven para o diretório de trabalho no contêiner
 COPY target/vinho-microservice-1.0.0.jar app.jar
 
-# Expõe a porta 8080 para acesso externo
 EXPOSE 8080
 
-# Define o comando de inicialização do contêiner
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 

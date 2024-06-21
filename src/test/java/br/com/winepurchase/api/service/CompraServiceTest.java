@@ -1,37 +1,30 @@
 package br.com.winepurchase.api.service;
 
-import br.com.winepurchase.api.model.dto.ClienteComprasDTO;
-import br.com.winepurchase.api.model.dto.MaiorCompraDTO;
-import br.com.winepurchase.api.model.dto.ProdutoDTO;
+import br.com.winepurchase.api.model.dto.*;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class CompraServiceTest {
 
-    @Mock
-    private RestTemplate restTemplate;
-
     @InjectMocks
     private CompraService compraService;
 
-    private static WireMockServer wireMockServer;
+    private WireMockServer wireMockServer;
 
     @Value("${app.urls.clientes}")
     private String urlClientes;
@@ -39,73 +32,115 @@ public class CompraServiceTest {
     @Value("${app.urls.produtos}")
     private String urlProdutos;
 
-    @BeforeAll
-    public static void setup() {
-        wireMockServer = new WireMockServer(8089);
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
         wireMockServer.start();
-        WireMock.configureFor("localhost", 8089);
+
+        urlClientes = wireMockServer.baseUrl() + "/clientes";
+        urlProdutos = wireMockServer.baseUrl() + "/produtos";
+
+        compraService = new CompraService(new RestTemplate(), urlClientes, urlProdutos);
     }
 
-    @AfterAll
-    public static void teardown() {
+    @AfterEach
+    public void tearDown() {
         wireMockServer.stop();
     }
 
     @Test
-    public void testListarComprasAgrupadas() {
-        // Setup mock responses
-        WireMock.stubFor(WireMock.get(urlEqualTo("/clientes"))
-                .willReturn(aResponse().withBody("[{\"nome\":\"Cliente 1\",\"cpf\":\"123\",\"compras\":[{\"codigo\":\"1\",\"quantidade\":2}]}]")));
-        WireMock.stubFor(WireMock.get(urlEqualTo("/produtos"))
-                .willReturn(aResponse().withBody("[{\"codigo\":1,\"tipo_vinho\":\"Tinto\",\"preco\":10.0,\"safra\":\"2018\",\"ano_compra\":2019}]")));
+    public void testObterClientes() {
+        wireMockServer.stubFor(get(urlEqualTo("/clientes"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"nome\": \"John Doe\", \"cpf\": \"12345678901\", \"compras\": []}]")));
 
-        // Test method
-        List<ClienteComprasDTO> result = compraService.listarComprasAgrupadas();
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-        assertEquals("Cliente 1", result.get(0).getNome());
+        List<ClienteDTO> resultado = compraService.obterClientes();
+
+        assertEquals(1, resultado.size());
+        assertEquals("John Doe", resultado.get(0).getNome());
+    }
+
+    @Test
+    public void testObterProdutos() {
+        wireMockServer.stubFor(get(urlEqualTo("/produtos"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"codigo\": 1, \"tipo_vinho\": \"Tinto\", \"preco\": 100.0, \"safra\": \"2015\", \"ano_compra\": 2022}]")));
+
+        List<ProdutoDTO> resultado = compraService.obterProdutos();
+
+        assertEquals(1, resultado.size());
+        assertEquals("Tinto", resultado.get(0).getTipoVinho());
+    }
+
+    @Test
+    public void testListarComprasAgrupadas() {
+        wireMockServer.stubFor(get(urlEqualTo("/clientes"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"nome\": \"John Doe\", \"cpf\": \"12345678901\", \"compras\": [{\"codigo\": \"1\", \"quantidade\": 2}]}]")));
+        wireMockServer.stubFor(get(urlEqualTo("/produtos"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"codigo\": 1, \"tipo_vinho\": \"Tinto\", \"preco\": 100.0, \"safra\": \"2015\", \"ano_compra\": 2022}]")));
+
+        List<ClienteComprasDTO> resultado = compraService.listarComprasAgrupadas();
+
+        assertEquals(1, resultado.size());
+        assertEquals("John Doe", resultado.get(0).getNome());
+        assertEquals(200.0, resultado.get(0).getTotalCompras());
     }
 
     @Test
     public void testClientesFieis() {
-        // Setup mock responses
-        WireMock.stubFor(WireMock.get(urlEqualTo("/clientes"))
-                .willReturn(aResponse().withBody("[{\"nome\":\"Cliente 1\",\"cpf\":\"123\",\"compras\":[{\"codigo\":\"1\",\"quantidade\":2}]}]")));
-        WireMock.stubFor(WireMock.get(urlEqualTo("/produtos"))
-                .willReturn(aResponse().withBody("[{\"codigo\":1,\"tipo_vinho\":\"Tinto\",\"preco\":10.0,\"safra\":\"2018\",\"ano_compra\":2019}]")));
+        wireMockServer.stubFor(get(urlEqualTo("/clientes"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"nome\": \"John Doe\", \"cpf\": \"12345678901\", \"compras\": [{\"codigo\": \"1\", \"quantidade\": 2}]}]")));
+        wireMockServer.stubFor(get(urlEqualTo("/produtos"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"codigo\": 1, \"tipo_vinho\": \"Tinto\", \"preco\": 100.0, \"safra\": \"2015\", \"ano_compra\": 2022}]")));
 
-        // Test method
-        List<ClienteComprasDTO> result = compraService.clientesFieis();
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-        assertEquals("Cliente 1", result.get(0).getNome());
+        List<ClienteComprasDTO> resultado = compraService.clientesFieis();
+
+        assertEquals(1, resultado.size());
+        assertEquals("John Doe", resultado.get(0).getNome());
+        assertEquals(200.0, resultado.get(0).getTotalCompras());
     }
 
     @Test
     public void testRecomendarVinho() {
-        // Setup mock responses
-        WireMock.stubFor(WireMock.get(urlEqualTo("/clientes"))
-                .willReturn(aResponse().withBody("[{\"nome\":\"Cliente 1\",\"cpf\":\"123\",\"compras\":[{\"codigo\":\"1\",\"quantidade\":2}]}]")));
-        WireMock.stubFor(WireMock.get(urlEqualTo("/produtos"))
-                .willReturn(aResponse().withBody("[{\"codigo\":1,\"tipo_vinho\":\"Tinto\",\"preco\":10.0,\"safra\":\"2018\",\"ano_compra\":2019}]")));
+        wireMockServer.stubFor(get(urlEqualTo("/clientes"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"nome\": \"John Doe\", \"cpf\": \"12345678901\", \"compras\": [{\"codigo\": \"1\", \"quantidade\": 2}]}]")));
+        wireMockServer.stubFor(get(urlEqualTo("/produtos"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"codigo\": 1, \"tipo_vinho\": \"Tinto\", \"preco\": 100.0, \"safra\": \"2015\", \"ano_compra\": 2022}]")));
 
-        // Test method
-        ProdutoDTO result = compraService.recomendarVinho("123");
-        assertNotNull(result);
-        assertEquals("Tinto", result.getTipoVinho());
+        ProdutoDTO resultado = compraService.recomendarVinho("12345678901");
+
+        assertEquals("Tinto", resultado.getTipoVinho());
     }
 
     @Test
     public void testMaiorCompraDoAno() {
-        // Setup mock responses
-        WireMock.stubFor(WireMock.get(urlEqualTo("/clientes"))
-                .willReturn(aResponse().withBody("[{\"nome\":\"Cliente 1\",\"cpf\":\"123\",\"compras\":[{\"codigo\":\"1\",\"quantidade\":2}]}]")));
-        WireMock.stubFor(WireMock.get(urlEqualTo("/produtos"))
-                .willReturn(aResponse().withBody("[{\"codigo\":1,\"tipo_vinho\":\"Tinto\",\"preco\":10.0,\"safra\":\"2018\",\"ano_compra\":2019}]")));
+        wireMockServer.stubFor(get(urlEqualTo("/clientes"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"nome\": \"John Doe\", \"cpf\": \"12345678901\", \"compras\": [{\"codigo\": \"1\", \"quantidade\": 2}]}]")));
+        wireMockServer.stubFor(get(urlEqualTo("/produtos"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("[{\"codigo\": 1, \"tipo_vinho\": \"Tinto\", \"preco\": 100.0, \"safra\": \"2015\", \"ano_compra\": 2022}]")));
 
-        // Test method
-        MaiorCompraDTO result = compraService.maiorCompraDoAno(2019);
-        assertNotNull(result);
-        assertEquals("Cliente 1", result.getNomeCliente());
+        MaiorCompraDTO resultado = compraService.maiorCompraDoAno(2022);
+
+        assertEquals("John Doe", resultado.getNomeCliente());
+        assertEquals(200.0, resultado.getValorTotal());
     }
 }
