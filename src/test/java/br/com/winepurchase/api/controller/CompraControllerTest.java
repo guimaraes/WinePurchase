@@ -26,18 +26,6 @@ public class CompraControllerTest {
     @MockBean
     private CompraService compraService;
 
-//    @Test
-//    public void testListarCompras() throws Exception {
-//        ClienteComprasDTO clienteComprasDTO = new ClienteComprasDTO("Pedin Pé de Cana", "12345678901", Arrays.asList(new CompraDetalhadaDTO(new ProdutoDTO(1, "Tinto", 100.0, "2015", 2022), 2, 200.0)), 200.0);
-//        when(compraService.listarComprasAgrupadas()).thenReturn(Arrays.asList(clienteComprasDTO));
-//
-//        mockMvc.perform(get("/compras")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$[0].nome").value("Pedin Pé de Cana"))
-//                .andExpect(jsonPath("$[0].totalCompras").value(200.0));
-//    }
-
     @Test
     public void testListarCompras() throws Exception {
         ClienteComprasDTO clienteComprasDTO = new ClienteComprasDTO(
