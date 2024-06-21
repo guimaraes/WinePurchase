@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  vinho-microservice:
+    image: vinho-microservice:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"

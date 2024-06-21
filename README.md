@@ -1,8 +1,13 @@
-## Documentação do Projeto WinePurchase
+Claro! Vou adicionar as informações sobre Docker e Docker Compose ao README.md.
 
-### Visão Geral
+### README.md
+
+```markdown
+# WinePurchase Microservice
 
 Este projeto é um microserviço Java baseado no Spring Boot que fornece APIs para gerenciar compras de vinhos. Ele consome dados mockados de clientes e produtos, fornecendo endpoints para listar compras, obter a maior compra do ano, identificar clientes fiéis e recomendar vinhos.
+
+## Visão Geral
 
 ### Estrutura do Projeto
 
@@ -87,6 +92,7 @@ As principais dependências do projeto incluem Spring Boot, Lombok, MapStruct, J
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
     </dependency>
+    <!-- Dependências para testes -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
@@ -141,16 +147,16 @@ app:
 ### Endpoints
 
 1. **GET /compras**
-    - Retorna uma lista das compras ordenadas de forma crescente por valor, contendo o nome dos clientes, CPF dos clientes, dados dos produtos, quantidade das compras e valores totais de cada compra.
+   - Retorna uma lista das compras ordenadas de forma crescente por valor, contendo o nome dos clientes, CPF dos clientes, dados dos produtos, quantidade das compras e valores totais de cada compra.
 
 2. **GET /maior-compra/{ano}**
-    - Retorna a maior compra do ano informado, contendo o nome do cliente, CPF do cliente, dados do produto, quantidade da compra e seu valor total.
+   - Retorna a maior compra do ano informado, contendo o nome do cliente, CPF do cliente, dados do produto, quantidade da compra e seu valor total.
 
 3. **GET /clientes-fieis**
-    - Retorna o Top 3 clientes mais fiéis, clientes que possuem mais compras recorrentes com maiores valores.
+   - Retorna o Top 3 clientes mais fiéis, clientes que possuem mais compras recorrentes com maiores valores.
 
 4. **GET /recomendacao/cliente/tipo**
-    - Retorna uma recomendação de vinho baseado nos tipos de vinho que o cliente mais compra.
+   - Retorna uma recomendação de vinho baseado nos tipos de vinho que o cliente mais compra.
 
 ### Exceções
 
@@ -174,7 +180,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-### Diagrama de Entidade-Relacionamento (DER)
+### Diagrama de Entidade-Relacionamento (ERD)
 
 Aqui está o Diagrama de Entidade-Relacionamento para o projeto:
 
@@ -197,9 +203,85 @@ erDiagram
         int anoCompra
     }
 
+    CLIENTE ||--o{ COMPRA: realiza
+    PRODUTO ||--o{ COMPRA: inclui
 ```
 
-### Executando o Projeto
+## Dockerização do Projeto
+
+### Dockerfile
+
+Crie um arquivo chamado `Dockerfile` na raiz do projeto com o seguinte conteúdo:
+
+```Dockerfile
+# Utiliza uma imagem base do OpenJDK 11
+FROM openjdk:11-jre-slim
+
+# Define o diretório de trabalho dentro do contêiner
+WORKDIR /app
+
+# Copia o arquivo JAR gerado pelo Maven para o diretório de trabalho no contêiner
+COPY target/vinho-microservice-1.0.0.jar app.jar
+
+# Expõe a porta 8080 para acesso externo
+EXPOSE 8080
+
+# Define o comando de inicialização do contêiner
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+### Construção e Execução da Imagem Docker
+
+1. **Construir o projeto com Maven**
+   ```bash
+   mvn clean package
+   ```
+
+2. **Construir a imagem Docker**
+   ```bash
+   docker build -t vinho-microservice:latest .
+   ```
+
+3. **Executar o contêiner Docker**
+   ```bash
+   docker run -p 8080:8080 vinho-microservice:latest
+   ```
+
+### Docker Compose (Opcional)
+
+Se você quiser usar o Docker Compose para facilitar a orquestração do contêiner, você pode criar um arquivo `docker-compose.yml`:
+
+**`docker-compose.yml`**
+
+```yaml
+version: '3.8'
+services:
+  vinho-microservice:
+    image: vinho-microservice:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+```
+
+Para iniciar a aplicação com Docker Compose, execute:
+
+```bash
+docker-compose up --build
+```
+
+### Limpeza
+
+Para parar e remover os cont
+
+êineres e a rede definida pelo Compose:
+
+```bash
+docker-compose down
+```
+
+## Executando o Projeto
 
 1. **Clonar o repositório**
    ```bash
