@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CompraService {
 
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${app.urls.clientes}")
     private String urlClientes;
@@ -26,27 +26,17 @@ public class CompraService {
     @Value("${app.urls.produtos}")
     private String urlProdutos;
 
-    public CompraService() {
-        this.restTemplate = null;
-    }
-
-    public CompraService(RestTemplate restTemplate, String urlClientes, String urlProdutos) {
-        this.restTemplate = restTemplate;
-        this.urlClientes = urlClientes;
-        this.urlProdutos = urlProdutos;
-    }
-
     public List<ClienteDTO> obterClientes() {
         log.info("Buscando clientes do URL: {}", urlClientes);
         ClienteDTO[] clientes = restTemplate.getForObject(urlClientes, ClienteDTO[].class);
-        log.info("Produtos {} cliente", clientes != null ? clientes.length : 0);
+        log.info("produtos {} cliente", clientes != null ? clientes.length : 0);
         return Arrays.asList(clientes);
     }
 
     public List<ProdutoDTO> obterProdutos() {
         log.info("Buscando produtos do URL: {}", urlProdutos);
         ProdutoDTO[] produtos = restTemplate.getForObject(urlProdutos, ProdutoDTO[].class);
-        log.info("Produtos {} buscados", produtos != null ? produtos.length : 0);
+        log.info("produtos {} buscados", produtos != null ? produtos.length : 0);
         return Arrays.asList(produtos);
     }
 
@@ -61,7 +51,7 @@ public class CompraService {
         List<ClienteComprasDTO> clientesCompras = new ArrayList<>();
 
         for (ClienteDTO cliente : clientes) {
-            log.info("Processando cliente: {}", cliente.getNome());
+            log.info("Processing client: {}", cliente.getNome());
             List<CompraDetalhadaDTO> comprasDetalhadas = cliente.getCompras().stream()
                     .map(compra -> {
                         ProdutoDTO produto = produtos.stream()
@@ -115,7 +105,7 @@ public class CompraService {
         List<ClienteComprasDTO> clientesCompras = new ArrayList<>();
 
         for (ClienteDTO cliente : clientes) {
-            log.info("Processando cliente: {}", cliente.getNome());
+            log.info("Processing client: {}", cliente.getNome());
             List<CompraDetalhadaDTO> comprasDetalhadas = cliente.getCompras().stream()
                     .map(compra -> {
                         ProdutoDTO produto = produtos.stream()
@@ -124,13 +114,13 @@ public class CompraService {
                                 .orElse(null);
 
                         if (produto != null) {
-                            log.info("Produto encontrado: {} com anoCompra: {}", produto.getCodigo(), produto.getAnoCompra());
+                            log.info("Found product: {} with anoCompra: {}", produto.getCodigo(), produto.getAnoCompra());
                             BigDecimal valorTotal = BigDecimal.valueOf(produto.getPreco())
                                     .multiply(BigDecimal.valueOf(compra.getQuantidade()))
                                     .setScale(2, RoundingMode.HALF_UP);
                             return new CompraDetalhadaDTO(produto, compra.getQuantidade(), valorTotal.doubleValue());
                         } else {
-                            log.warn("Produto não encontrado para código: {}", compra.getCodigo());
+                            log.warn("Product not found for code: {}", compra.getCodigo());
                         }
                         return null;
                     })
