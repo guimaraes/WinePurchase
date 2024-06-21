@@ -1,15 +1,10 @@
-Claro! Vou adicionar as informações sobre Docker e Docker Compose ao README.md.
+### Documentação do Projeto WinePurchase
 
-### README.md
-
-```markdown
-# WinePurchase Microservice
+#### Visão Geral
 
 Este projeto é um microserviço Java baseado no Spring Boot que fornece APIs para gerenciar compras de vinhos. Ele consome dados mockados de clientes e produtos, fornecendo endpoints para listar compras, obter a maior compra do ano, identificar clientes fiéis e recomendar vinhos.
 
-## Visão Geral
-
-### Estrutura do Projeto
+#### Estrutura do Projeto
 
 ```
 src/
@@ -48,7 +43,7 @@ src/
 │           └── WinePurchaseApplicationTests.java
 ```
 
-### Dependências
+#### Dependências
 
 As principais dependências do projeto incluem Spring Boot, Lombok, MapStruct, Jackson, Swagger, e bibliotecas para testes como JUnit e Mockito. Abaixo estão algumas das principais dependências do `pom.xml`:
 
@@ -112,7 +107,7 @@ As principais dependências do projeto incluem Spring Boot, Lombok, MapStruct, J
 </dependencies>
 ```
 
-### Configuração do Aplicativo
+#### Configuração do Aplicativo
 
 **`application.yml`**
 
@@ -144,7 +139,7 @@ app:
     produtos: https://rgr3viiqdl8sikgv.public.blob.vercel-storage.com/produtos-mnboX5IPl6VgG390FECTKqHsD9SkLS.json
 ```
 
-### Endpoints
+#### Endpoints
 
 1. **GET /compras**
    - Retorna uma lista das compras ordenadas de forma crescente por valor, contendo o nome dos clientes, CPF dos clientes, dados dos produtos, quantidade das compras e valores totais de cada compra.
@@ -158,7 +153,7 @@ app:
 4. **GET /recomendacao/cliente/tipo**
    - Retorna uma recomendação de vinho baseado nos tipos de vinho que o cliente mais compra.
 
-### Exceções
+#### Exceções
 
 **GlobalExceptionHandler.java**
 
@@ -178,6 +173,78 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
+```
+
+### Dockerização
+
+#### Dockerfile
+
+Crie um arquivo chamado `Dockerfile` na raiz do projeto com o seguinte conteúdo:
+
+```Dockerfile
+# Utiliza uma imagem base do OpenJDK 11
+FROM openjdk:11-jre-slim
+
+# Define o diretório de trabalho dentro do contêiner
+WORKDIR /app
+
+# Copia o arquivo JAR gerado pelo Maven para o diretório de trabalho no contêiner
+COPY target/vinho-microservice-1.0.0.jar app.jar
+
+# Expõe a porta 8080 para acesso externo
+EXPOSE 8080
+
+# Define o comando de inicialização do contêiner
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+#### Docker Compose
+
+Para facilitar a orquestração do contêiner, você pode criar um arquivo `docker-compose.yml`:
+
+**`docker-compose.yml`**
+
+```yaml
+version: '3.8'
+services:
+  vinho-microservice:
+    image: vinho-microservice:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+```
+
+#### Construção e Execução da Imagem Docker
+
+1. **Construir o projeto com Maven**
+   ```bash
+   mvn clean package
+   ```
+
+2. **Construir a imagem Docker**
+   ```bash
+   docker build -t vinho-microservice:latest .
+   ```
+
+3. **Executar o contêiner Docker**
+   ```bash
+   docker run -p 8080:8080 vinho-microservice:latest
+   ```
+
+#### Usando Docker Compose
+
+Para iniciar a aplicação com Docker Compose, execute:
+
+```bash
+docker-compose up --build
+```
+
+Para parar e remover os contêineres e a rede definida pelo Compose:
+
+```bash
+docker-compose down
 ```
 
 ### Diagrama de Entidade-Relacionamento (ERD)
@@ -207,91 +274,19 @@ erDiagram
     PRODUTO ||--o{ COMPRA: inclui
 ```
 
-## Dockerização do Projeto
+### Executando o Projeto
 
-### Dockerfile
+1. **Clonar
 
-Crie um arquivo chamado `Dockerfile` na raiz do projeto com o seguinte conteúdo:
-
-```Dockerfile
-# Utiliza uma imagem base do OpenJDK 11
-FROM openjdk:11-jre-slim
-
-# Define o diretório de trabalho dentro do contêiner
-WORKDIR /app
-
-# Copia o arquivo JAR gerado pelo Maven para o diretório de trabalho no contêiner
-COPY target/vinho-microservice-1.0.0.jar app.jar
-
-# Expõe a porta 8080 para acesso externo
-EXPOSE 8080
-
-# Define o comando de inicialização do contêiner
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-### Construção e Execução da Imagem Docker
-
-1. **Construir o projeto com Maven**
+o repositório**
    ```bash
-   mvn clean package
-   ```
-
-2. **Construir a imagem Docker**
-   ```bash
-   docker build -t vinho-microservice:latest .
-   ```
-
-3. **Executar o contêiner Docker**
-   ```bash
-   docker run -p 8080:8080 vinho-microservice:latest
-   ```
-
-### Docker Compose (Opcional)
-
-Se você quiser usar o Docker Compose para facilitar a orquestração do contêiner, você pode criar um arquivo `docker-compose.yml`:
-
-**`docker-compose.yml`**
-
-```yaml
-version: '3.8'
-services:
-  vinho-microservice:
-    image: vinho-microservice:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-```
-
-Para iniciar a aplicação com Docker Compose, execute:
-
-```bash
-docker-compose up --build
-```
-
-### Limpeza
-
-Para parar e remover os cont
-
-êineres e a rede definida pelo Compose:
-
-```bash
-docker-compose down
-```
-
-## Executando o Projeto
-
-1. **Clonar o repositório**
-   ```bash
-   git clone https://github.com/guimaraes/WinePurchase.git
+   git clone <URL-DO-REPOSITORIO>
    cd vinho-microservice
    ```
 
 2. **Compilar o projeto**
    ```bash
-   mvn clean install
+   mvn clean package
    ```
 
 3. **Executar o projeto**
@@ -302,3 +297,11 @@ docker-compose down
 ### Documentação Swagger
 
 Depois de iniciar o aplicativo, você pode acessar a documentação Swagger em `http://localhost:8080/swagger-ui.html` para explorar e testar os endpoints.
+
+### Contribuindo
+
+Se você deseja contribuir para este projeto, sinta-se à vontade para abrir uma issue ou enviar um pull request.
+
+---
+
+Espero que esta documentação ajude você a entender e utilizar o projeto WinePurchase.
